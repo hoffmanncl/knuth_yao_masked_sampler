@@ -1,0 +1,17 @@
+[BUILD] State changed to 'HAWK_256_T0_test_4_QEMU'. Forcing full clean...
+[ -d obj ] || mkdir -p obj
+arm-none-eabi-gcc -x assembler-with-cpp -E -Wp,-P -DMPS2_AN386 -DDATA_IN_FLASH -Icommon/mps2 common/mps2/MPS2.ld -o obj/ldscript.ld
+[ -d obj/common/mps2 ] || mkdir -p obj/common/mps2
+arm-none-eabi-gcc -c -o obj/common/mps2/startup_MPS2.S.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  -DDATA_IN_FLASH common/mps2/startup_MPS2.S
+[ -d obj/common ] || mkdir -p obj/common
+arm-none-eabi-gcc -c -o obj/common/hal-mps2.c.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  common/hal-mps2.c
+[ -d obj/common ] || mkdir -p obj/common
+arm-none-eabi-gcc -c -o obj/common/randombytes.c.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  common/randombytes.c
+[ -d obj ] || mkdir -p obj
+arm-none-eabi-ar rcs obj/libpqm4hal.a obj/common/mps2/startup_MPS2.S.o obj/common/hal-mps2.c.o obj/common/randombytes.c.o
+[ -d obj ] || mkdir -p obj
+arm-none-eabi-gcc -c -o obj/bench.c.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  bench.c
+[ -d obj ] || mkdir -p obj
+arm-none-eabi-gcc -c -o obj/gadgets_masked.c.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  gadgets_masked.c
+[ -d obj ] || mkdir -p obj
+arm-none-eabi-gcc -c -o obj/ky_samplers.c.o -DHAWK_256_T0 -DNUM_BATCHES=200 -DNSHARES=4  -O3 -DIO_TEST -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 --specs=nosys.specs -Icommon -Icommon/mps2  ky_samplers.c
