@@ -27,6 +27,12 @@ The python libraries used are:
 * `chipwhisperer` used for all communications with the target
 * `matplotlib` used to plot output distributions
 
+To install all the python dependencies used by the script,
+please create a new python virtual environment and run
+```bash
+pip install -r requirements.txt
+```
+
 ## Build and Run Instructions
 
 The build system is entirely driven by `make`. You can configure the target
@@ -61,7 +67,7 @@ Chipwhisperer) use:
 make run-bench
 ```
 This generates automatically the .hex files for all parameter sets and number of
-shares from 2 to 9, uploads them one by one to the target and reads the output
+shares from 2 to 6, uploads them one by one to the target and reads the output
 (via the UART protocol) to get the results. Results are collected and written in
 a file called `bench-results-2shares-to-9shares.txt` in the `code` folder. Note
 that our benchmarks are done on the STM32F4 since it has a TRNG.

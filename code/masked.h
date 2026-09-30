@@ -3,7 +3,7 @@
 
 
 #if defined(FRODO_1344)
-#define NAME frodo1344 
+#define NAME frodo1344
 #elif defined(FRODO_976)
 #define NAME frodo976
 #elif defined(FRODO_640)
@@ -20,6 +20,12 @@
 #define NAME hawk1024_t0
 #elif defined(HAWK_1024_T1)
 #define NAME hawk1024_t1
+#elif defined(HAETAE)
+#define NAME haetae_base
+#define NOADDSIGNS // remove add_signs from benches
+#elif defined(FALCON)
+#define NAME falcon_base
+#define NOADDSIGNS // remove add_signs from benches
 #else
 #define NAME UNKNOWN
 #endif
@@ -48,6 +54,8 @@
     defined(HAWK_1024_T0) || defined(HAWK_1024_T1) || \
     defined(FRODO_640) || defined(FRODO_976)
     #define OUTPUT_SIZE 5
+#else
+    #define OUTPUT_SIZE 8
 #endif
 
 #endif

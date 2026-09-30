@@ -31,7 +31,6 @@ static const uint32_t HAWK256_T0_CDT_TABLE[10][3] = {
     {0x0014DA4A, 0x00000000, 0x00000000},
     {0x0000007B, 0x00000000, 0x00000000},
 };
-
 static const size_t HAWK256_T1_CDT_SIZE = 10;
 static const uint32_t HAWK256_T1_CDT_TABLE[10][3] = {
     {0x81C718B1, 0x9408A4B1, 0x00001345},

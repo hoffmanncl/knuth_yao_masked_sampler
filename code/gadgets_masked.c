@@ -12,7 +12,7 @@
 void transpose32(uint32_t a[32]) {
     int j, k;
     uint32_t m, t;
-    
+
     m = 0x0000FFFF;
     for (j = 16; j != 0; j = j >> 1, m = m ^ (m << j)) {
         for (k = 0; k < 32; k = (k + j + 1) & ~j) {
@@ -85,7 +85,7 @@ void masked_copy_core(uint32_t *output, uint32_t *in) {
  **************************************************/
 void masked_full_adder(uint32_t *output_s, uint32_t *output_c, uint32_t *in1, uint32_t *in2, uint32_t *in3) {
     uint32_t tmp1[NSHARES], tmp2[NSHARES], tmp3[NSHARES];
-    
+
     masked_xor_core(tmp1, in1, in2);      // tmp1 = in1 ^ in2
     masked_xor_core(output_s, tmp1, in3); // s = tmp1 ^ in3 = (in1 ^ in2) ^ in3
     masked_xor_core(tmp2, in1, in3);      // tmp2 = in1 ^ in3
@@ -95,7 +95,7 @@ void masked_full_adder(uint32_t *output_s, uint32_t *output_c, uint32_t *in1, ui
 
 void masked_add_signs(uint32_t *output, uint32_t *in, uint32_t *signs) {
     uint32_t out[OUTPUT_SIZE * NSHARES];
-    
+
     // Apply conditional 1s-complement via XOR
     for (size_t i = 0; i < OUTPUT_SIZE; i++) {
         masked_xor_core(out + i * NSHARES, in + i * NSHARES, signs);
@@ -104,10 +104,10 @@ void masked_add_signs(uint32_t *output, uint32_t *in, uint32_t *signs) {
     uint32_t mc[NSHARES], mzero[NSHARES];
     trivial_mask(mc, 0);
     trivial_mask(mzero, 0);
-    
+
     // Add the sign bit as carry-in to complete the 2s-complement conversion
     masked_full_adder(output + 0 * NSHARES, mc, out + 0 * NSHARES, signs, mc);
-    
+
     for (size_t i = 1; i < OUTPUT_SIZE - 1; i++) {
         masked_full_adder(output + i * NSHARES, mc, out + i * NSHARES, mzero, mc);
     }
@@ -119,12 +119,16 @@ void masked_add_signs(uint32_t *output, uint32_t *in, uint32_t *signs) {
  * WRAPPER
  **************************************************/
 void masked_sampler(ky_circuit_func circuit, uint32_t *output, uint32_t *rs, size_t precision) {
-    // 1. Evaluate the generated Knuth-Yao circuit
+    // Evaluate the generated Knuth-Yao circuit
     circuit(output, rs);
 
-    // 2. Apply signs
+#if defined(NOADDSIGNS)
+#pragma message "ADDSIGN is excluded from benches"
+#else
+#pragma message "ADDSIGN is included in benches"
+    // Apply signs
     // The randomness array 'rs' must contain (precision + 1) * NSHARES elements.
     uint32_t *signs = rs + precision * NSHARES;
-    
     masked_add_signs(output, output, signs);
+#endif
 }

@@ -38,13 +38,31 @@ class MakeParams:
 default_build = MakeParams()
 
 paramsets = [
-                "FRODO_1344", "FRODO_976", "FRODO_640", 
+                "FRODO_1344", "FRODO_976", "FRODO_640",
                 "HAWK_512_T0", "HAWK_512_T1",
                 "HAWK_1024_T0", "HAWK_1024_T1",
                 "HAWK_256_T0", "HAWK_256_T1",
+                "HAETAE", "FALCON",
             ]
 
+paramname = { "FRODO_1344"  : "F1344",  "FRODO_976"   : "F976", "FRODO_640" : "F640",
+              "HAWK_512_T0" : "H512.0", "HAWK_512_T1" : "H512.1",
+              "HAWK_1024_T0": "H1024.0","HAWK_1024_T1": "H1024.1",
+             "HAWK_256_T0"  : "H256.0", "HAWK_256_T1" : "H256.1",
+             "HAETAE" : "HAETAE", "FALCON" : "FALCON",
+             }
+
+modename  = { "bench_cdt_unmasked" : "UnCDT", "bench_ky_unmasked" : "UnKY", "bench" : "KY", "test" : "T"}
+makename = lambda param, mode : paramname[param] + "/" + modename[mode]
 modes = [ "bench", "bench_cdt_unmasked", "bench_ky_unmasked"]
+unmasked_modes = ["bench_cdt_unmasked", "bench_ky_unmasked"]
+non_cdt = ["HAETAE", "FALCON"] # exclude from unmasked_cdt benches
+non_ky  = ["HAETAE", "FALCON",
+            "HAWK_512_T0", "HAWK_512_T1",
+            "HAWK_1024_T0", "HAWK_1024_T1",
+            "HAWK_256_T0", "HAWK_256_T1",
+] # exclude from unmasked_ky benches
+#modes = [ "bench_cdt_unmasked", "bench_ky_unmasked"]
 
 def make(make_param : MakeParams = default_build):
     return subprocess.run(["make",
@@ -68,7 +86,6 @@ def poll_target_until(endmsg):
         read_now = target.read(timeout=100)
         # if read_now.strip() != "": print(read_now)
         read_data += read_now
-    
     return read_data
 
 def full_chain(make_param = default_build):
@@ -91,24 +108,27 @@ def full_chain(make_param = default_build):
             res_dic[var[1]] = cost
     return res_dic
 
-def auto_bench(nshares_start = 1, nshares_finish = 4, paramset = "FRODO_1344"):
+def auto_bench(nshares_start = 1, nshares_finish = 4, paramset = "FRODO_1344", mode = "bench"):
     results_cycles = defaultdict(list)
     results_rnd = defaultdict(list)
     assert(paramset in paramsets)
 
     make_clean()
-    for mode in modes:
-        for i in range(nshares_start, nshares_finish + 1):
-            make_param_cyc = MakeParams(nshares=i, param=paramset, mode=mode)
-            make_param_rnd = MakeParams(nshares=i, bench="BENCH_RND", param=paramset, mode=mode)
-            res_cyc = full_chain(make_param_cyc)
-            make_clean()
-            res_rnd = full_chain(make_param_rnd)
-            make_clean()
-            for k in res_cyc.keys():
-                results_cycles[k] += [res_cyc[k]]
-            for k in res_rnd.keys():
-                results_rnd[k] += [res_rnd[k]]
+    nshare_range = range(nshares_start, nshares_finish + 1)
+    if mode in unmasked_modes:
+        nshare_range = range(1, 2)
+
+    for i in nshare_range:
+        make_param_cyc = MakeParams(nshares=i, param=paramset, mode=mode)
+        make_param_rnd = MakeParams(nshares=i, bench="BENCH_RND", param=paramset, mode=mode)
+        res_cyc = full_chain(make_param_cyc)
+        make_clean()
+        res_rnd = full_chain(make_param_rnd)
+        make_clean()
+        for k in res_cyc.keys():
+            results_cycles[k] += [res_cyc[k]]
+        for k in res_rnd.keys():
+            results_rnd[k] += [res_rnd[k]]
     return (results_cycles, results_rnd)
 
 def table_print(res, title = "", fd = None):
@@ -133,23 +153,26 @@ def table_print(res, title = "", fd = None):
 
 def run_bench(n):
     fd = open(f"bench-results-1shares-to-{n}shares.txt", 'w')
-    for param in paramsets:
-        cyc, rnd = auto_bench(nshares_start=1, nshares_finish=n, paramset=param)
-        table_print(cyc, f"Cyc ({param})", fd)
-        table_print(rnd, f"Rng ({param})", fd)
+    for mode in modes:
+        for param in paramsets:
+            if mode == "bench_cdt_unmasked" and param in non_cdt:
+                continue
+            if mode == "bench_ky_unmasked" and param in non_ky:
+                continue
+            cyc, rnd = auto_bench(nshares_start=1, nshares_finish=n, paramset=param, mode=mode)
+            table_print(cyc, f"Cyc/{makename(param, mode)}", fd)
+            table_print(rnd, f"Rng/{makename(param, mode)}", fd)
     fd.close()
 
 
 def reset():
     scope.target_pwr = False
     time.sleep(1)
-    scope.target_pwr = True 
+    scope.target_pwr = True
 
 def disconnect():
     scope.dis()
     target.dis()
 
 if __name__ == """__main__""":
-    # args = par.parse_args()
     run_bench(6)
-    

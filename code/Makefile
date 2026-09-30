@@ -13,7 +13,6 @@ NUM_BATCHES?=200
 NSHARES?=2
 EXTRAFLAGS?=
 CFLAGS += -D$(PARAM) -DNUM_BATCHES=$(NUM_BATCHES) -DNSHARES=$(NSHARES) $(EXTRAFLAGS) -O3
-
 MODE?=test# test, bench, unmasked, ky_unmasked
 ifeq ($(MODE),test)
 CFLAGS += -DIO_TEST
@@ -121,7 +120,7 @@ all: hex/stm.hex elf/stm.elf
 endif
 
 run-bench:
-	@python3 ../scripts/bench.py run
+	@python3 ./script/bench.py run
 
 # =========================================================
 # QEMU Run Target with stdout parsing and sample routing
